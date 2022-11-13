@@ -1,0 +1,8 @@
+# vs code files
+.vscode
+
+# Mac Files
+.DS_Store
+
+# Microsoft Edge Dev files
+.hintrc
