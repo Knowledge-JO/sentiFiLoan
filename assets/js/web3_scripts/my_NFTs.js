@@ -9,7 +9,7 @@ const cards = document.querySelector('.cards');
 
 export const dictionary = {};
 
-const CHOSEN_NFTS = []
+let CHOSEN_NFTS = ''
 
 async function createNFTCards(){
     let assets = await fetchNFTSFromAddress(accountAddress);
@@ -36,20 +36,25 @@ async function createNFTCards(){
 }
 
 
+function whenClicked() {
+    Array.from(cards.children)
+    .filter((card) => card.classList.contains('clicked'))
+    .forEach((card) => card.classList.remove('clicked'))
+}
+
 
 await createNFTCards()
 .then(() => {
     cards.addEventListener('click', (e) => {
-
+        whenClicked()
+        e.target.parentElement.parentElement.classList.add('clicked')
+        
         let elementId = e.target.parentElement.parentElement.getAttribute('id');
-        console.log(elementId)
-        //elementId = elementId.split('_')[0];
-    
-        if (!(CHOSEN_NFTS.includes(elementId))){
-            CHOSEN_NFTS.push(elementId);
+        
+        if (!(CHOSEN_NFTS.includes(elementId)) && e.target.parentElement.parentElement.classList.contains('clicked')){
+            CHOSEN_NFTS = elementId;
         }
-        localStorage.setItem("collection_slug", JSON.stringify(CHOSEN_NFTS));
+        localStorage.setItem("collection_slug", CHOSEN_NFTS);
         
     })
 })
-console.log(dictionary)

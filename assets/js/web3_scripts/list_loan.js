@@ -8,11 +8,11 @@ const loanButton = document.querySelector('.loan');
 loanButton.onclick = init_loan;
 
 let stored_loanDetails = JSON.parse(localStorage.getItem('loan_form'));
-const nft = JSON.parse(localStorage.getItem("collection_slug"));
-console.log(stored_loanDetails, nft);
-const nft_slug = nft[0].split('_')[0];
-const nft_token_id = nft[0].split('_')[1];
-console.log(nft_slug, nft_token_id);
+const nft = localStorage.getItem("collection_slug");
+// console.log(stored_loanDetails, nft);
+const nft_slug = nft.split('_')[0];
+const nft_token_id = nft.split('_')[1];
+// console.log(nft_slug, nft_token_id);
 
 // get chosen nft details
 let assets = await fetchNFTSFromAddress(accountAddress);
@@ -28,7 +28,7 @@ assets.forEach((e) => {
     };
 })
 
-console.log(token_details);
+// console.log(token_details);
 
 
 // retrieve floor price
@@ -57,9 +57,8 @@ function get_APY(duration, interest) {
 
 const minAndMax = {}
 function calculateMinAndMaxReturns(){
-    
     const APY = get_APY(stored_loanDetails["duration"], stored_loanDetails["interest"]);
-    console.log(APY)
+    // console.log(APY)
     let maxReturn = Number(stored_loanDetails["amount"])/100*APY;
         maxReturn = maxReturn + Number(stored_loanDetails["amount"])
         minAndMax["max_return"] = maxReturn.toFixed(3);
@@ -71,14 +70,15 @@ function calculateMinAndMaxReturns(){
 }
 
 calculateMinAndMaxReturns()
-console.log(minAndMax)
+// console.log(minAndMax)
 
 const loan_factory_contract = new ethers.Contract(LOAN_CONTRACT_FACTORY_ADDRESS, LOAN_CONTRACT_FACTORY_ABI, signer);
 const IERC721_ABI = new ethers.Contract(token_details["token_address"], IERC721, signer);
 
 
 async function  init_loan() {
-    const create_loan_contract = await loan_factory_contract.createP2PLoanContract(token_details["token_address"]);
+    const create_loan_contract = await loan_factory_contract.createP2PLoanContract(token_details["token_address"])
+    .catch((err) => console.log(err.message))
 
     loan_factory_contract.on("LoanContract", async(_p2ploan, index) => {
         let info = {
@@ -87,7 +87,8 @@ async function  init_loan() {
         };
 
         // approve contract
-        await IERC721_ABI.approve(info["address"], token_details["token_id"]);
+        await IERC721_ABI.approve(info["address"], token_details["token_id"])
+        .catch((err) => console.log(err.message))
 
         IERC721_ABI.on("Approval", async(owner,approved,tokenId) => {
             // create loan
@@ -97,7 +98,7 @@ async function  init_loan() {
                 stored_loanDetails["duration"],
                 ethers.utils.parseEther(stored_loanDetails["interest"]),
                 token_details["token_id"]
-            )
+            ).catch((err) => console.log(err.message))
 
             loan_factory_contract.on('LoanCreated', async(loanCreated) => {
                  // make post request to database.
@@ -111,7 +112,10 @@ async function  init_loan() {
                     collection_size, 
                     accountAddress).then((data) => {
                      console.log(data)
-                 })
+                     localStorage.clear()
+                 }).catch((err) => console.log(err.message))
+                 
+                 
             })
             
         })

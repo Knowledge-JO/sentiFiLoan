@@ -9,7 +9,7 @@ const interest = document.querySelector('#interest');
 const loan = document.querySelector('.loan');
 
 
-let stored = JSON.parse(localStorage.getItem("collection_slug"));
+let stored = (localStorage.getItem("collection_slug"));
 console.log(stored);
 
 
